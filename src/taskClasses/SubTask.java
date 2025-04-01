@@ -1,18 +1,20 @@
-package TaskManager;
+package taskClasses;
+
+import eNums.TaskStatus;
 
 public class SubTask extends Task {
-    private int mainEpicId = 0;
+    private int epicId;
 
     public SubTask(String taskName, String taskDescription, TaskStatus taskStatus) {
         super(taskName, taskDescription, taskStatus);
     }
 
-    protected int getMainEpicId() {
-        return mainEpicId;
+    public int getEpicId() {
+        return epicId;
     }
 
-    protected void setMainEpicId(int mainEpicId) {
-        this.mainEpicId = mainEpicId;
+    public void setEpicId(int epicId) {
+        this.epicId = epicId;
     }
 
     @Override
@@ -22,7 +24,7 @@ public class SubTask extends Task {
                 ", subTaskName='" + super.getTaskName() + '\'' +
                 ", subTaskDescription='" + super.getTaskDescription() + '\'' +
                 ", subTaskStatus=" + super.getTaskStatus() +
-                ", mainEpicId=" + mainEpicId +
+                ", epicId=" + epicId +
                 "}";
     }
 }

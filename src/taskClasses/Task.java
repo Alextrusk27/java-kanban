@@ -1,4 +1,6 @@
-package TaskManager;
+package taskClasses;
+
+import eNums.TaskStatus;
 
 import java.util.Objects;
 
@@ -26,15 +28,15 @@ public class Task {
         return id;
     }
 
-    protected void setId(int id) {
+    public void setId(int id) {
         this.id = id;
     }
 
-    protected TaskStatus getTaskStatus() {
+    public TaskStatus getTaskStatus() {
         return taskStatus;
     }
 
-    protected void setTaskStatus(TaskStatus taskStatus) {
+    public void setTaskStatus(TaskStatus taskStatus) {
         this.taskStatus = taskStatus;
     }
 

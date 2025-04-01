@@ -1,4 +1,4 @@
-package TaskManager;
+package taskClasses;
 
 import java.util.ArrayList;
 
@@ -10,11 +10,11 @@ public class Epic extends Task {
         subTasksIds = new ArrayList<>();
     }
 
-    protected ArrayList<Integer> getSubTasksIds() {
+    public ArrayList<Integer> getSubTasksIds() {
         return subTasksIds;
     }
 
-    protected void setSubTasksIds(ArrayList<Integer> subTasksIds) {
+    public void setSubTasksIds(ArrayList<Integer> subTasksIds) {
         this.subTasksIds = subTasksIds;
     }
 

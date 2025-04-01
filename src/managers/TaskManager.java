@@ -1,4 +1,7 @@
-package TaskManager;
+package managers;
+
+import eNums.TaskStatus;
+import taskClasses.*;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -7,41 +10,30 @@ import java.util.HashMap;
 public class TaskManager {
     private static int defaultId = 0; // для метода генерации id объектов при добавлении в менеджер
 
-    private final HashMap<Integer, Task> tasksList;
-    private final HashMap<Integer, Epic> epicsList;
-    private final HashMap<Integer, SubTask> subTasksList;
-
-    public TaskManager() {
-        tasksList = new HashMap<>();
-        epicsList = new HashMap<>();
-        subTasksList = new HashMap<>();
-    }
+    private final HashMap<Integer, Task> tasksList = new HashMap<>();
+    private final HashMap<Integer, Epic> epicsList = new HashMap<>();
+    private final HashMap<Integer, SubTask> subTasksList = new HashMap<>();
 
     // добавить новую задачу
-    public void setTask(Task task) {
-        checkTaskType(task);
-        if (task.getId() == 0) { // id всех новых объектов == 0, иначе задача уже есть в менеджере с другим id
+    public void addTask(Task task) {
             task.setId(createNewId());
             tasksList.put(task.getId(), task);
-        }
     }
 
     // добавить новый эпик
-    public void setEpic(Epic epic) {
-        if (epic.getId() == 0) { // если не 0, значит этот эпик уже есть в менеджере с другим id
+    public void addEpic(Epic epic) {
             epic.setId(createNewId());
             epicsList.put(epic.getId(), epic);
             checkEpicStatus(epic.getId()); // статус эпика
-        }
     }
 
     // добавить новую подзадачу в список и связка с эпиком
-    public void setSubTask(SubTask subTask, int epicId) {
-        // если не 0, значит подзадача уже заведена в менеджере + эпик с epicId должен существовать
-        if (subTask.getId() == 0 && epicsList.containsKey(epicId)) {
+    public void addSubTask(SubTask subTask, int epicId) {
+        // эпик с epicId должен существовать
+        if (epicsList.containsKey(epicId)) {
             subTask.setId(createNewId());
             subTasksList.put(subTask.getId(), subTask);
-            subTask.setMainEpicId(epicId); // передаем epicId в подзадачу
+            subTask.setEpicId(epicId); // передаем epicId в подзадачу
             Epic epic = epicsList.get(epicId);
             epic.getSubTasksIds().add(subTask.getId()); // добавляем id подзадачи в эпик
             checkEpicStatus(epic.getId()); // статус эпика
@@ -50,17 +42,17 @@ public class TaskManager {
 
     // получение списка задач
     public Collection<Task> getTasksList() {
-        return tasksList.values();
+        return new ArrayList<>(tasksList.values());
     }
 
     // получение списка эпиков
     public Collection<Epic> getEpicsList() {
-        return epicsList.values();
+        return new ArrayList<>(epicsList.values());
     }
 
     // получение списка подзадач
     public Collection<SubTask> getSubTasksList() {
-        return subTasksList.values();
+        return new ArrayList<>(subTasksList.values());
     }
 
     // получение списка подзадач определенного эпика
@@ -92,7 +84,6 @@ public class TaskManager {
 
     // обновление задачи по id
     public void updateTask(Task task, int taskId) {
-        checkTaskType(task);
         if (tasksList.containsKey(taskId)) {
             tasksList.get(taskId).setId(0); // обнуление id
             tasksList.put(taskId, task);
@@ -114,20 +105,20 @@ public class TaskManager {
     }
 
     // обновление подзадачи по id
-    public void updateSubTusk(SubTask subTask, int subTuskId) {
-        if (subTasksList.containsKey(subTuskId)) {
-            int mainEpicId = subTasksList.get(subTuskId).getMainEpicId();
-            subTasksList.get(subTuskId).setMainEpicId(0); // обнуление mainEpicId
-            subTasksList.get(subTuskId).setId(0); // обнуление id
-            subTask.setMainEpicId(mainEpicId); // передача новой подзадаче mainEpicId
-            subTasksList.put(subTuskId, subTask);
-            subTask.setId(subTuskId);
-            checkEpicStatus(mainEpicId);
+    public void updateSubTask(SubTask subTask, int subTaskId) {
+        if (subTasksList.containsKey(subTaskId)) {
+            int epicId = subTasksList.get(subTaskId).getEpicId();
+            subTasksList.get(subTaskId).setEpicId(0); // обнуление epicId
+            subTasksList.get(subTaskId).setId(0); // обнуление id
+            subTask.setEpicId(epicId); // передача новой подзадаче epicId
+            subTasksList.put(subTaskId, subTask);
+            subTask.setId(subTaskId);
+            checkEpicStatus(epicId);
         }
     }
 
     // удаление задачи по id
-    public void removeTusk(int taskId) {
+    public void removeTask(int taskId) {
         tasksList.get(taskId).setId(0); // обнуление id
         tasksList.remove(taskId);
     }
@@ -136,10 +127,10 @@ public class TaskManager {
     public void removeSubTask(int subTaskId) {
         if (subTasksList.containsKey(subTaskId)) {
             SubTask subTask = subTasksList.get(subTaskId); // удаляемая подзадача
-            Epic epic = epicsList.get(subTask.getMainEpicId()); // эпик удаляемой подзадачи
+            Epic epic = epicsList.get(subTask.getEpicId()); // эпик удаляемой подзадачи
             epic.getSubTasksIds().remove((Integer) subTask.getId()); // удаление id подзадачи в эпике
-            checkEpicStatus(subTask.getMainEpicId());
-            subTask.setMainEpicId(0); // обнуление поля mainEpicId в подзадаче
+            checkEpicStatus(subTask.getEpicId());
+            subTask.setEpicId(0); // обнуление поля epicId в подзадаче
             subTasksList.get(subTaskId).setId(0); // обнуление id
             subTasksList.remove(subTaskId); // удаление
         }
@@ -159,26 +150,18 @@ public class TaskManager {
 
     // удаление всех задач
     public void removeAllTasks() {
-        ArrayList<Integer> allTasksIds = new ArrayList<>(tasksList.keySet());
-        for (int taskId : allTasksIds) {
-            removeTusk(taskId);
-        }
+        tasksList.clear();
     }
 
     // удаление всех подзадач
     public void removeAllSubTasks() {
-        ArrayList<Integer> allSubTusksIds = new ArrayList<>(subTasksList.keySet());
-        for (int subTaskId : allSubTusksIds) {
-            removeSubTask(subTaskId);
-        }
+        subTasksList.clear();
     }
 
     // удаление всех эпиков
     public void removeAllEpics() {
-        ArrayList<Integer> allEpicsIds = new ArrayList<>(epicsList.keySet());
-        for (int epicId : allEpicsIds) {
-            removeEpic(epicId);
-        }
+        epicsList.clear();
+        subTasksList.clear();
     }
 
     // статус эпика
@@ -206,13 +189,6 @@ public class TaskManager {
     private int createNewId() {
         defaultId++;
         return defaultId;
-    }
-
-    // запрет передачи объектов-наследников в методы с параметром Tusk
-    private void checkTaskType(Task task) {
-        if (task instanceof SubTask || task instanceof Epic) {
-            throw new IllegalArgumentException("Можно передавать только объекты класса Task");
-        }
     }
 }
 
