@@ -1,6 +1,6 @@
-package taskClasses;
+package tasks;
 
-import eNums.TaskStatus;
+import enums.TaskStatus;
 
 import java.util.Objects;
 

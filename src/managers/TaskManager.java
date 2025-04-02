@@ -1,7 +1,7 @@
 package managers;
 
-import eNums.TaskStatus;
-import taskClasses.*;
+import enums.TaskStatus;
+import tasks.*;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -85,7 +85,6 @@ public class TaskManager {
     // обновление задачи по id
     public void updateTask(Task task, int taskId) {
         if (tasksList.containsKey(taskId)) {
-            tasksList.get(taskId).setId(0); // обнуление id
             tasksList.put(taskId, task);
             task.setId(taskId);
         }
@@ -95,7 +94,6 @@ public class TaskManager {
     public void updateEpic(Epic epic, int epicId) {
         if (epicsList.containsKey(epicId)) {
             ArrayList<Integer> subTasksIds = new ArrayList<>(epicsList.get(epicId).getSubTasksIds());
-            epicsList.get(epicId).setId(0); // обнуление id
             epicsList.get(epicId).getSubTasksIds().clear(); // очистка subTasksIds
             epic.setSubTasksIds(subTasksIds); // передача списка subTasksIds
             epicsList.put(epicId, epic);
@@ -109,7 +107,6 @@ public class TaskManager {
         if (subTasksList.containsKey(subTaskId)) {
             int epicId = subTasksList.get(subTaskId).getEpicId();
             subTasksList.get(subTaskId).setEpicId(0); // обнуление epicId
-            subTasksList.get(subTaskId).setId(0); // обнуление id
             subTask.setEpicId(epicId); // передача новой подзадаче epicId
             subTasksList.put(subTaskId, subTask);
             subTask.setId(subTaskId);
@@ -119,7 +116,6 @@ public class TaskManager {
 
     // удаление задачи по id
     public void removeTask(int taskId) {
-        tasksList.get(taskId).setId(0); // обнуление id
         tasksList.remove(taskId);
     }
 
@@ -131,7 +127,6 @@ public class TaskManager {
             epic.getSubTasksIds().remove((Integer) subTask.getId()); // удаление id подзадачи в эпике
             checkEpicStatus(subTask.getEpicId());
             subTask.setEpicId(0); // обнуление поля epicId в подзадаче
-            subTasksList.get(subTaskId).setId(0); // обнуление id
             subTasksList.remove(subTaskId); // удаление
         }
     }
@@ -143,7 +138,6 @@ public class TaskManager {
             for (int subTaskId : subTasksIds) { // удаление подзадач эпика
                 removeSubTask(subTaskId);
             }
-            epicsList.get(epicId).setId(0); // обнуление id
             epicsList.remove(epicId); // удаление эпика
         }
     }
@@ -155,6 +149,10 @@ public class TaskManager {
 
     // удаление всех подзадач
     public void removeAllSubTasks() {
+        for (Epic epic : epicsList.values()) {
+            epic.getSubTasksIds().clear();
+            checkEpicStatus(epic.getId());
+        }
         subTasksList.clear();
     }
 
