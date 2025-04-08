@@ -183,7 +183,6 @@ public class InMemoryTaskManager implements TaskManager {
         return historyManager.getHistory();
     }
 
-    // статус эпика
     private void checkEpicStatus(int epicId) {
         ArrayList<TaskStatus> subTasksStatus = new ArrayList<>(); // список статусов подзадач эпика
 
@@ -204,7 +203,6 @@ public class InMemoryTaskManager implements TaskManager {
         }
     }
 
-    //  генерация ID для новой задачи
     private int createNewId() {
         defaultId++;
         return defaultId;
