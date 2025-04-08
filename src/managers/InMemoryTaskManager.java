@@ -18,17 +18,17 @@ public class InMemoryTaskManager implements TaskManager {
     private final HistoryManager historyManager = Managers.getDefaultHistory();
 
     @Override
-    public String addTask(Task task) {
-            task.setId(createNewId());
-            tasksList.put(task.getId(), task);
-        return null;
+    public void addTask(Task task) {
+        task.setId(createNewId());
+        Task newTask = new Task(task);
+        tasksList.put(newTask.getId(), newTask);
     }
 
     @Override
     public void addEpic(Epic epic) {
         epic.setId(createNewId());
-        epicsList.put(epic.getId(), epic);
-        checkEpicStatus(epic.getId()); // статус эпика
+        Epic newEpic = new Epic(epic);
+        epicsList.put(newEpic.getId(), newEpic);
     }
 
     @Override
@@ -36,10 +36,13 @@ public class InMemoryTaskManager implements TaskManager {
         // эпик с epicId должен существовать
         if (epicsList.containsKey(epicId)) {
             subTask.setId(createNewId());
-            subTasksList.put(subTask.getId(), subTask);
-            subTask.setEpicId(epicId); // передаем epicId в подзадачу
+            subTask.setEpicId(epicId); // передача epicId
+
+            SubTask newSubTask = new SubTask(subTask);
+
+            subTasksList.put(newSubTask.getId(), newSubTask);
             Epic epic = epicsList.get(epicId);
-            epic.getSubTasksIds().add(subTask.getId()); // добавляем id подзадачи в эпик
+            epic.getSubTasksIds().add(newSubTask.getId()); // добавляем id подзадачи в эпик
             checkEpicStatus(epic.getId()); // статус эпика
         }
     }
@@ -92,30 +95,37 @@ public class InMemoryTaskManager implements TaskManager {
     @Override
     public void updateTask(Task task, int taskId) {
         if (tasksList.containsKey(taskId)) {
-            tasksList.put(taskId, task);
             task.setId(taskId);
+            Task newTask = new Task(task);
+            tasksList.put(taskId, newTask);
         }
     }
 
     @Override
     public void updateEpic(Epic epic, int epicId) {
         if (epicsList.containsKey(epicId)) {
-            ArrayList<Integer> subTasksIds = new ArrayList<>(epicsList.get(epicId).getSubTasksIds());
-            epicsList.get(epicId).getSubTasksIds().clear(); // очистка subTasksIds
-            epic.setSubTasksIds(subTasksIds); // передача списка subTasksIds
-            epicsList.put(epicId, epic);
             epic.setId(epicId);
+            ArrayList<Integer> subTasksIds = new ArrayList<>(epicsList.get(epicId).getSubTasksIds());
+
+            Epic newEpic = new Epic(epic);
+            newEpic.setSubTasksIds(subTasksIds); // передача списка subTasksIds
+            epicsList.put(epicId, newEpic);
+
             checkEpicStatus(epicId); // статус эпика
         }
     }
 
     @Override
     public void updateSubTask(SubTask subTask, int subTaskId) {
+
         if (subTasksList.containsKey(subTaskId)) {
             int epicId = subTasksList.get(subTaskId).getEpicId();
-            subTask.setEpicId(epicId); // передача новой подзадаче epicId
-            subTasksList.put(subTaskId, subTask);
             subTask.setId(subTaskId);
+
+            SubTask newSubTusk = new SubTask(subTask);
+            newSubTusk.setEpicId(epicId);
+            subTasksList.put(subTaskId, newSubTusk);
+
             checkEpicStatus(epicId);
         }
     }

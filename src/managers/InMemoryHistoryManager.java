@@ -1,25 +1,35 @@
 package managers;
 
+import tasks.Epic;
+import tasks.SubTask;
 import tasks.Task;
 
 import java.util.ArrayList;
-import java.util.List;
 
 public class InMemoryHistoryManager implements HistoryManager {
-    private static final ArrayList<Task> historyViews = new ArrayList<>(); // история просмотров
+    private final ArrayList<Task> historyViews = new ArrayList<>(); // история просмотров
+    public static final int HISTORY_LIMIT = 10;
 
 
     @Override
-    public void addToHistory(Task task) {
-        Task taskToHistory = new Task(task.getTaskName(), task.getTaskDescription(), task.getTaskStatus());
-        if (historyViews.size() == 10) {
+    public <T extends Task> void addToHistory(T task) {
+        while (historyViews.size() >= HISTORY_LIMIT) {
             historyViews.removeFirst();
         }
-        historyViews.add(taskToHistory);
+        if (task instanceof Epic) {
+            Epic taskToAdd = new Epic((Epic) task);
+            historyViews.add(taskToAdd);
+        } else if (task instanceof SubTask) {
+            SubTask subTaskToAdd = new SubTask((SubTask) task);
+            historyViews.add(subTaskToAdd);
+        } else {
+            Task taskToAdd = new Task(task);
+            historyViews.add(taskToAdd);
+        }
     }
 
     @Override
-    public List<Task> getHistory() {
+    public ArrayList<Task> getHistory() {
         return historyViews;
     }
 }

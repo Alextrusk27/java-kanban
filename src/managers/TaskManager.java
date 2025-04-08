@@ -8,7 +8,7 @@ import java.util.List;
 public interface TaskManager {
 
     // добавить новую задачу
-    String addTask(Task task);
+    void addTask(Task task);
 
     // добавить новый эпик
     void addEpic(Epic epic);
