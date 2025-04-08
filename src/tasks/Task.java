@@ -40,11 +40,11 @@ public class Task {
         this.taskStatus = taskStatus;
     }
 
-    protected String getTaskName() {
+    public String getTaskName() {
         return taskName;
     }
 
-    protected String getTaskDescription() {
+    public String getTaskDescription() {
         return taskDescription;
     }
 
