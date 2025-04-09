@@ -1,7 +1,5 @@
 package managers;
 
-import tasks.Epic;
-import tasks.SubTask;
 import tasks.Task;
 
 import java.util.ArrayList;
@@ -15,7 +13,7 @@ public class InMemoryHistoryManager implements HistoryManager {
     public <T extends Task> void addToHistory(T task) {
         if (task != null) {
             historyViews.add(task);
-            while (historyViews.size() > HISTORY_LIMIT) {
+            if (historyViews.size() > HISTORY_LIMIT) {
                 historyViews.removeFirst();
             }
         }
