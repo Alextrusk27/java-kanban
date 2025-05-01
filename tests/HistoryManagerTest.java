@@ -5,48 +5,68 @@ import tasks.*;
 
 import java.util.List;
 
-import static managers.InMemoryHistoryManager.HISTORY_LIMIT;
-
 public class HistoryManagerTest {
 
-    private HistoryManager history;
+    private HistoryManager historyManager;
 
-    private Task task1;
-    private Epic epic1;
-    private SubTask subTask1Epic1;
+    private Task task;
+    private Epic epic;
+    private SubTask subTask;
 
     @BeforeEach
     public void setDefaultValues() {
-        history = Managers.getDefaultHistory();
+        historyManager = Managers.getDefaultHistory();
+        TaskManager taskManager = Managers.getDefault();
 
-        task1 = new Task("task1name", "task1description", TaskStatus.NEW);
-        epic1 = new Epic("epic1name", "epic1description");
-        subTask1Epic1 = new SubTask("subTask1name", "subTask1description", TaskStatus.NEW);
+        task = new Task("task1name", "task1description", TaskStatus.NEW);
+        epic = new Epic("epic1name", "epic1description");
+        subTask = new SubTask("subTask1name", "subTask1description", TaskStatus.NEW);
+
+        taskManager.addTask(task);
+        taskManager.addEpic(epic);
+        taskManager.addSubTask(subTask, epic.getId());
     }
 
     @Test
-    public void addAnyTaskToHistory() {
-        history.addToHistory(task1);
-        history.addToHistory(epic1);
-        history.addToHistory(subTask1Epic1);
+    public void addTaskToHistory() {
+        historyManager.addToHistory(task);
+        historyManager.addToHistory(epic);
+        historyManager.addToHistory(subTask);
 
-        List<Task> historyList = history.getHistory();
-
-        Assertions.assertTrue(historyList.contains(task1), "Задача не найдена");
-        Assertions.assertTrue(historyList.contains(epic1), "Эпик не найден");
-        Assertions.assertTrue(historyList.contains(subTask1Epic1), "Подзадача не найдена");
+        Assertions.assertTrue(historyManager.getHistory().contains(task), "Задача не найдена");
+        Assertions.assertTrue(historyManager.getHistory().contains(epic), "Эпик не найден");
+        Assertions.assertTrue(historyManager.getHistory().contains(subTask), "Подзадача не найдена");
     }
 
     @Test
-    public void ifAddOverLimitValueToListFirstValueWillBeRemoved() {
-        int count = 1;
-        int overLimit = HISTORY_LIMIT + 2;
+    public void historyHaveNoDuplicates() {
+        historyManager.addToHistory(task);
+        historyManager.addToHistory(task);
 
-        while (count <= overLimit) {
-            history.addToHistory(task1);
-            count++;
-        }
+        Assertions.assertEquals(1, historyManager.getHistory().size(), "История содержит дубль");
+    }
 
-        Assertions.assertEquals(HISTORY_LIMIT, history.getHistory().size(), "Список истории выше лимита");
+    @Test
+    public void getHistoryGetTasksInOrderOfAddition() {
+        historyManager.addToHistory(subTask);
+        historyManager.addToHistory(task);
+        historyManager.addToHistory(epic);
+        historyManager.addToHistory(subTask);
+        historyManager.addToHistory(task);
+
+        List<Task> history = historyManager.getHistory();
+
+        Assertions.assertEquals(epic, history.getFirst(), "Порядок нарушен");
+        Assertions.assertEquals(task, history.getLast(), "Порядок нарушен");
+    }
+
+    @Test
+    public void removeTasksRemoveFromHistory() {
+        historyManager.addToHistory(task);
+        historyManager.remove(task.getId());
+
+        Assertions.assertFalse(historyManager.getHistory().contains(task), "Задача не удалена");
     }
 }
+
+
