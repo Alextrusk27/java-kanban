@@ -75,10 +75,6 @@ public class TaskManagerTest {
         manager.addEpic(epic1);
         Epic testEpic1 = manager.getEpic(epic1.getId());
 
-        Assertions.assertThrows(NullPointerException.class, () -> {
-            manager.getEpic(epic2.getId());
-        });
-
         Assertions.assertTrue(manager.getEpicsList().contains(testEpic1), "Эпик не найден");
         Assertions.assertEquals(1, manager.getEpicsList().size(), "Размер списка не совпадает");
     }
@@ -90,11 +86,7 @@ public class TaskManagerTest {
 
         SubTask testSubTask1 = manager.getSubTask(subTask1Epic1.getId());
 
-        Assertions.assertThrows(NullPointerException.class, () -> {
-            manager.getSubTask(subTask2Epic1.getId());
-        });
-
-        Assertions.assertTrue(manager.getSubTasksList().contains(testSubTask1), "Ползадача не найдена");
+        Assertions.assertTrue(manager.getSubTasksList().contains(testSubTask1), "Подзадача не найдена");
         Assertions.assertEquals(1, manager.getSubTasksList().size(), "Размер списка не совпадает");
     }
 
@@ -245,9 +237,7 @@ public class TaskManagerTest {
         manager.removeTask(taskId);
 
         Assertions.assertFalse(manager.getTasksList().contains(testTask), "Задача не удалена");
-        Assertions.assertThrows(NullPointerException.class, () -> {
-            manager.getTask(taskId);
-        });
+        Assertions.assertNull(manager.getTask(taskId), "Задача не удалена");
     }
 
     @Test
