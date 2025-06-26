@@ -1,5 +1,7 @@
 package tasks;
 
+import enums.TaskType;
+
 import java.util.ArrayList;
 
 public class Epic extends Task {
@@ -25,12 +27,10 @@ public class Epic extends Task {
 
     @Override
     public String toString() {
-        return "Epic{" +
-                "id=" + super.getId() +
-                ", epicName='" + super.getTaskName() + '\'' +
-                ", epicDescription='" + super.getTaskDescription() + '\'' +
-                ", epicStatus=" + super.getTaskStatus() +
-                ", subTasksIds=" + subTasksIds +
-                "}";
+        return super.getId() + "," +
+                TaskType.EPIC + "," +
+                super.getTaskName() + "," +
+                super.getTaskStatus() + "," +
+                super.getTaskDescription() + ",";
     }
 }

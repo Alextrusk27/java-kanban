@@ -9,11 +9,11 @@ import java.util.List;
 
 
 public class InMemoryTaskManager implements TaskManager {
-    private static int defaultId = 0; // для метода генерации id объектов при добавлении в менеджер
+    protected static int defaultId = 0; // для метода генерации id объектов при добавлении в менеджер
 
-    private final HashMap<Integer, Task> tasksList = new HashMap<>();
-    private final HashMap<Integer, Epic> epicsList = new HashMap<>();
-    private final HashMap<Integer, SubTask> subTasksList = new HashMap<>();
+    protected final HashMap<Integer, Task> tasksList = new HashMap<>();
+    protected final HashMap<Integer, Epic> epicsList = new HashMap<>();
+    protected final HashMap<Integer, SubTask> subTasksList = new HashMap<>();
 
     private final HistoryManager historyManager = Managers.getDefaultHistory();
 
