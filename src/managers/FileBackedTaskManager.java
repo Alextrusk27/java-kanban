@@ -1,6 +1,7 @@
 package managers;
 
 import enums.TaskStatus;
+import enums.TaskType;
 import exceptions.ManagerSaveException;
 import tasks.*;
 
@@ -159,12 +160,10 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
                         defaultId = task.getId();
                     }
 
-                    if (task instanceof SubTask) {
-                        taskManager.subTasksList.put(task.getId(), (SubTask) task);
-                    } else if (task instanceof Epic) {
-                        taskManager.epicsList.put(task.getId(), (Epic) task);
-                    } else {
-                        taskManager.tasksList.put(task.getId(), task);
+                    switch (task.getTaskType()) {
+                        case TaskType.SUBTASK -> taskManager.subTasksList.put(task.getId(), (SubTask) task);
+                        case TaskType.EPIC -> taskManager.epicsList.put(task.getId(), (Epic) task);
+                        case TaskType.TASK -> taskManager.tasksList.put(task.getId(), task);
                     }
                 }
             }
@@ -177,7 +176,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
     public static Task taskFromString(String value) {
 
         String[] taskData = value.split(",");
-        String taskType = taskData[1];
+        TaskType taskType = TaskType.valueOf(taskData[1]);
 
         int taskId = Integer.parseInt(taskData[0]);
         String taskName = taskData[2];
@@ -193,16 +192,16 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
         }
 
         switch (taskType) {
-            case "TASK":
+            case TaskType.TASK:
                 Task task = new Task(taskName, taskDescription, taskStatus);
                 task.setId(taskId);
                 return task;
-            case "EPIC":
+            case TaskType.EPIC:
                 Epic epic = new Epic(taskName, taskDescription);
                 epic.setTaskStatus(taskStatus);
                 epic.setId(taskId);
                 return epic;
-            case "SUBTASK":
+            case TaskType.SUBTASK:
                 SubTask subTask = new SubTask(taskName, taskDescription, taskStatus);
                 subTask.setId(taskId);
                 subTask.setEpicId(Integer.parseInt(taskData[5]));
@@ -210,7 +209,6 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
             default:
                 throw new IllegalArgumentException("Ошибка преобразования строки в задачу: неизвестный " +
                         "тип задачи у задачи ID " + taskId);
-
         }
     }
 }
