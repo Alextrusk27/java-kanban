@@ -114,7 +114,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
         return autoSave;
     }
 
-    private void save () {
+    private void save() {
         try (BufferedWriter bw = new BufferedWriter(new FileWriter(autoSave, StandardCharsets.UTF_8))) {
             bw.write("");
             bw.write(HEAD_LINE_IN_AUTOSAVE_FILE);
