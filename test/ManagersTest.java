@@ -1,7 +1,14 @@
+import managers.FileBackedTaskManager;
 import managers.HistoryManager;
 import managers.Managers;
 import managers.TaskManager;
 import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.io.TempDir;
+
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 public class ManagersTest {
 
@@ -21,5 +28,13 @@ public class ManagersTest {
         HistoryManager historyManager = Managers.getDefaultHistory();
 
         Assertions.assertNotNull(historyManager.getHistory(), "Спсиок просмотров не создан");
+    }
+
+    @Test
+    public void createFileBackedHistoryManager(@TempDir Path tempDir) throws IOException {
+        File tempFile = tempDir.resolve("junit_file_backed_manager.csv").toFile();
+        Files.createFile(tempFile.toPath());
+        FileBackedTaskManager fileBackedTaskManager = Managers.getDefaultBacked(tempFile.getPath());
+        Assertions.assertNotNull(fileBackedTaskManager, "FileBackedTaskManager не создан");
     }
 }

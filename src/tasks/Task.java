@@ -1,6 +1,7 @@
 package tasks;
 
 import enums.TaskStatus;
+import enums.TaskType;
 
 import java.util.Objects;
 
@@ -9,12 +10,14 @@ public class Task {
     private int id = 0; // 0 используется для блокировки многократного добавления одного объекта
     private final String taskName;
     private final String taskDescription;
+    protected TaskType taskType;
     private TaskStatus taskStatus;
 
     public Task(String taskName, String taskDescription, TaskStatus taskStatus) {
         this.taskName = taskName;
         this.taskDescription = taskDescription;
         this.taskStatus = taskStatus;
+        this.taskType = TaskType.TASK;
     }
 
     // для эпиков
@@ -29,6 +32,7 @@ public class Task {
         this.taskDescription = task.taskDescription;
         this.taskStatus = task.taskStatus;
         this.id = task.getId();
+        this.taskType = TaskType.TASK;
     }
 
     public int getId() {
@@ -41,6 +45,10 @@ public class Task {
 
     public TaskStatus getTaskStatus() {
         return taskStatus;
+    }
+
+    public TaskType getTaskType() {
+        return taskType;
     }
 
     public void setTaskStatus(TaskStatus taskStatus) {
@@ -57,12 +65,11 @@ public class Task {
 
     @Override
     public String toString() {
-        return "Task{" +
-                "id=" + id +
-                ", taskName='" + taskName + '\'' +
-                ", taskDescription='" + taskDescription + '\'' +
-                ", taskStatus=" + taskStatus +
-                '}';
+        return id + "," +
+                taskType + "," +
+                taskName + "," +
+                taskStatus + "," +
+                taskDescription + ",";
     }
 
     @Override
