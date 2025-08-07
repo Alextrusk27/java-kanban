@@ -6,9 +6,8 @@ import enums.TaskType;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Objects;
-import java.util.Optional;
 
-public class Task implements Comparable<Task> {
+public class Task {
 
     private int id = 0; // 0 используется для блокировки многократного добавления одного объекта
     private final String taskName;
@@ -120,22 +119,11 @@ public class Task implements Comparable<Task> {
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
         Task task = (Task) o;
-        return id == task.id &&
-                Objects.equals(taskName, task.taskName) &&
-                Objects.equals(taskDescription, task.taskDescription) &&
-                taskType == task.taskType &&
-                taskStatus == task.taskStatus &&
-                Objects.equals(taskStartTime, task.taskStartTime) &&
-                Objects.equals(taskDuration, task.taskDuration);
+        return id == task.id;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, taskName, taskDescription, taskType, taskStatus, taskStartTime, taskDuration);
-    }
-
-    @Override
-    public int compareTo(Task task) {
-        return this.taskStartTime.compareTo(task.taskStartTime);
+        return Objects.hash(id);
     }
 }

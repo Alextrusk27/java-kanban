@@ -3,15 +3,12 @@ import exceptions.OverlapException;
 import managers.InMemoryTaskManager;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import tasks.Epic;
-import tasks.SubTask;
-import tasks.Task;
+import tasks.*;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.Optional;
 
 public class InMemoryTaskManagerTest extends TaskManagerTest<InMemoryTaskManager> {
@@ -19,35 +16,31 @@ public class InMemoryTaskManagerTest extends TaskManagerTest<InMemoryTaskManager
     @Test
     public void addNewTaskAndFindItInTaskList() {
         manager.addTask(task1);
-        Task testTask = manager.getTask(task1.getId())
-                .orElseThrow(() -> new NoSuchElementException("Задача не найдена"));
-
-        Assertions.assertEquals(task1, testTask, "Задачи не совпадают.");
+        Optional<Task> testTask = manager.getTask(task1.getId());
+        Assertions.assertTrue(testTask.isPresent());
+        Assertions.assertEquals(task1, testTask.get(), "Задачи не совпадают.");
     }
 
     @Test
     public void addNewEpicAndFindItInEpicList() {
         manager.addEpic(epic1);
-        Epic testEpic = manager.getEpic(epic1.getId()).get();
-
-        Assertions.assertNotNull(testEpic, "Эпик не найден.");
-        Assertions.assertEquals(epic1, testEpic, "Эпики не совпадают.");
+        Optional<Epic> testEpic = manager.getEpic(epic1.getId());
+        Assertions.assertTrue(testEpic.isPresent());
+        Assertions.assertEquals(epic1, testEpic.get(), "Эпики не совпадают.");
     }
 
     @Test
     public void addNewSubTaskAndCheckCorrectConnectionWithEpic() {
         manager.addEpic(epic1);
         manager.addSubTask(subTask1Epic1, epic1.getId());
-
-        SubTask testSubTask = manager.getSubTask(subTask1Epic1.getId()).get();
-
-        Assertions.assertEquals(subTask1Epic1, testSubTask, "Подзадачи не совпадают.");
+        Optional<SubTask> testSubTask = manager.getSubTask(subTask1Epic1.getId());
+        Assertions.assertTrue(testSubTask.isPresent());
+        Assertions.assertEquals(subTask1Epic1, testSubTask.get(), "Подзадачи не совпадают.");
     }
 
     @Test
     public void taskListContainsOnlyAddedTasks() {
         manager.addTask(task1);
-
         Assertions.assertTrue(manager.getTasksList().contains(task1), "Задача не найдена");
         Assertions.assertFalse(manager.getTasksList().contains(task2), "Задача не добавлялась");
         Assertions.assertEquals(1, manager.getTasksList().size(), "Размер списка не совпадает");
@@ -56,9 +49,9 @@ public class InMemoryTaskManagerTest extends TaskManagerTest<InMemoryTaskManager
     @Test
     public void epicListContainsOnlyAddedEpics() {
         manager.addEpic(epic1);
-        Epic testEpic1 = manager.getEpic(epic1.getId()).get();
-
-        Assertions.assertTrue(manager.getEpicsList().contains(testEpic1), "Эпик не найден");
+        Optional<Epic> testEpic1 = manager.getEpic(epic1.getId());
+        Assertions.assertTrue(testEpic1.isPresent());
+        Assertions.assertTrue(manager.getEpicsList().contains(testEpic1.get()), "Эпик не найден");
         Assertions.assertEquals(1, manager.getEpicsList().size(), "Размер списка не совпадает");
     }
 
@@ -66,10 +59,9 @@ public class InMemoryTaskManagerTest extends TaskManagerTest<InMemoryTaskManager
     public void subTasksListContainsOnlyAddedSubTasks() {
         manager.addEpic(epic1);
         manager.addSubTask(subTask1Epic1, epic1.getId());
-
-        SubTask testSubTask1 = manager.getSubTask(subTask1Epic1.getId()).get();
-
-        Assertions.assertTrue(manager.getSubTasksList().contains(testSubTask1), "Подзадача не найдена");
+        Optional<SubTask> testSubTask1 = manager.getSubTask(subTask1Epic1.getId());
+        Assertions.assertTrue(testSubTask1.isPresent());
+        Assertions.assertTrue(manager.getSubTasksList().contains(testSubTask1.get()), "Подзадача не найдена");
         Assertions.assertEquals(1, manager.getSubTasksList().size(), "Размер списка не совпадает");
     }
 
@@ -78,35 +70,34 @@ public class InMemoryTaskManagerTest extends TaskManagerTest<InMemoryTaskManager
         manager.addEpic(epic1);
         manager.addSubTask(subTask1Epic1, epic1.getId());
         manager.addSubTask(subTask2Epic1, epic1.getId());
-
-        Epic testEpic1 = manager.getEpic(epic1.getId()).get();
-        SubTask testSubTask1 = manager.getSubTask(subTask1Epic1.getId()).get();
-        SubTask testSubTask2 = manager.getSubTask(subTask2Epic1.getId()).get();
-
-        Assertions.assertTrue(testEpic1.getSubTasksIds().contains(testSubTask1.getId()), "Подазадача не найдена");
-        Assertions.assertTrue(testEpic1.getSubTasksIds().contains(testSubTask2.getId()), "Подазадача не найдена");
-        Assertions.assertEquals(2, testEpic1.getSubTasksIds().size(), "Размер списка подзадач не совпадает");
+        Optional<Epic> testEpic1 = manager.getEpic(epic1.getId());
+        Optional<SubTask> testSubTask1 = manager.getSubTask(subTask1Epic1.getId());
+        Optional<SubTask> testSubTask2 = manager.getSubTask(subTask2Epic1.getId());
+        Assertions.assertTrue(testEpic1.isPresent());
+        Assertions.assertTrue(testSubTask1.isPresent());
+        Assertions.assertTrue(testSubTask2.isPresent());
+        Assertions.assertTrue(testEpic1.get().getSubTasksIds().contains(testSubTask1.get().getId()),
+                "Подзадача не найдена");
+        Assertions.assertTrue(testEpic1.get().getSubTasksIds().contains(testSubTask2.get().getId()),
+                "Подзадача не найдена");
+        Assertions.assertEquals(2, testEpic1.get().getSubTasksIds().size(),
+                "Размер списка подзадач не совпадает");
     }
 
     @Test
     public void updateTaskAndSaveCorrectId() {
         manager.addTask(task1);
-
         int taskId = task1.getId();
-
-        Task taskBeforeUpdate = manager.getTask(taskId)
-                .orElseThrow(() -> new NoSuchElementException("Задача не найдена"));
-
+        Optional<Task> taskBeforeUpdate = manager.getTask(taskId);
+        Assertions.assertTrue(taskBeforeUpdate.isPresent());
         manager.updateTask(task2, taskId);
-
-        Task taskAfterUpdate = manager.getTask(taskId)
-                .orElseThrow(() -> new NoSuchElementException("Обновленная задача не найдена"));
-
-        Assertions.assertEquals(taskBeforeUpdate.getId(), taskAfterUpdate.getId(), "Id не совпадают");
-        Assertions.assertEquals("task2name", taskAfterUpdate.getTaskName(), "Некорректный Task name");
-        Assertions.assertEquals("task2description", taskAfterUpdate.getTaskDescription(),
+        Optional<Task> taskAfterUpdate = manager.getTask(taskId);
+        Assertions.assertTrue(taskAfterUpdate.isPresent());
+        Assertions.assertEquals(taskBeforeUpdate.get().getId(), taskAfterUpdate.get().getId(), "Id не совпадают");
+        Assertions.assertEquals("task2name", taskAfterUpdate.get().getTaskName(), "Некорректный Task name");
+        Assertions.assertEquals("task2description", taskAfterUpdate.get().getTaskDescription(),
                 "Некорректный Task description");
-        Assertions.assertEquals(TaskStatus.IN_PROGRESS, taskAfterUpdate.getTaskStatus(), "Некорректный статус");
+        Assertions.assertEquals(TaskStatus.IN_PROGRESS, taskAfterUpdate.get().getTaskStatus(), "Некорректный статус");
     }
 
     @Test
@@ -114,12 +105,17 @@ public class InMemoryTaskManagerTest extends TaskManagerTest<InMemoryTaskManager
         manager.addEpic(epic1);
         manager.addSubTask(subTask1Epic1, epic1.getId());
         manager.addSubTask(subTask2Epic1, epic1.getId());
+        int epicId = epic1.getId();
 
-        final int epicId = epic1.getId();
+        Optional<Epic> beforeUpdate = manager.getEpic(epicId);
+        Assertions.assertTrue(beforeUpdate.isPresent());
+        Epic epicBeforeUpdate = new Epic(beforeUpdate.get());
 
-        Epic epicBeforeUpdate = new Epic(manager.getEpic(epicId).get());
         manager.updateEpic(epic2, epicId);
-        Epic epicAfterUpdate = new Epic(manager.getEpic(epicId).get());
+
+        Optional<Epic> afterUpdate = manager.getEpic(epicId);
+        Assertions.assertTrue(afterUpdate.isPresent());
+        Epic epicAfterUpdate = new Epic(afterUpdate.get());
 
         Assertions.assertEquals(epicBeforeUpdate.getId(), epicAfterUpdate.getId(), "Id не совпадают");
         Assertions.assertEquals("epic2name", epicAfterUpdate.getTaskName(), "Некорректный epic name");
@@ -132,48 +128,51 @@ public class InMemoryTaskManagerTest extends TaskManagerTest<InMemoryTaskManager
         manager.addEpic(epic1);
         manager.addSubTask(subTask1Epic1, epic1.getId());
 
-        final int subTaskId = subTask1Epic1.getId();
-        final int epicId = subTask1Epic1.getEpicId();
+        int subTaskId = subTask1Epic1.getId();
+        int epicId = subTask1Epic1.getEpicId();
 
-        SubTask subTaskBeforeUpdate = new SubTask(manager.getSubTask(subTaskId).get());
+        Optional<SubTask> beforeUpdate = manager.getSubTask(subTaskId);
+        Assertions.assertTrue(beforeUpdate.isPresent());
+        SubTask subTaskBeforeUpdate = new SubTask(beforeUpdate.get());
+
         manager.updateSubTask(subTask3Epic2, subTask1Epic1.getId());
-        SubTask subTaskAfterUpdate = new SubTask(manager.getSubTask(subTaskId).get());
 
-        Epic testEpic = manager.getEpic(epicId).get();
+        Optional<SubTask> afterUpdate = manager.getSubTask(subTaskId);
+        Assertions.assertTrue(afterUpdate.isPresent());
+        SubTask subTaskAfterUpdate = new SubTask(afterUpdate.get());
+
+        Optional<Epic> testEpic = manager.getEpic(epicId);
+        Assertions.assertTrue(testEpic.isPresent());
 
         Assertions.assertEquals(subTaskBeforeUpdate.getId(), subTaskAfterUpdate.getId(), "Id не совпадают");
         Assertions.assertEquals("subTask3name", subTaskAfterUpdate.getTaskName(), "Некорректный subTask name");
         Assertions.assertEquals("subTask3description", subTaskAfterUpdate.getTaskDescription(),
                 "Некорректный subTask description");
-
         Assertions.assertEquals(epicId, subTaskAfterUpdate.getEpicId(), "epicId изменился");
-        Assertions.assertTrue(testEpic.getSubTasksIds().contains(subTaskId), "subTaskId на нейден в эпике");
+        Assertions.assertTrue(testEpic.get().getSubTasksIds().contains(subTaskId), "subTaskId на найден в эпике");
     }
 
     @Test
     public void epicStatusChangingCorrectly() {
         manager.addEpic(epic1);
-        Epic testEpic = manager.getEpic(epic1.getId()).get();
-
+        Optional<Epic> test = manager.getEpic(epic1.getId());
+        Assertions.assertTrue(test.isPresent());
+        Epic testEpic = test.get();
         Assertions.assertEquals(TaskStatus.NEW, testEpic.getTaskStatus(), "Неверный статус при создании эпика");
 
         manager.addSubTask(subTask1Epic1, testEpic.getId());
-
         Assertions.assertEquals(TaskStatus.NEW, testEpic.getTaskStatus(), "Неверный статус при добавлении NEW");
 
         manager.addSubTask(subTask2Epic1, testEpic.getId());
-
         Assertions.assertEquals(TaskStatus.IN_PROGRESS, testEpic.getTaskStatus(), "Неверный статус " +
                 "при добавлении IN PROGRESS");
 
         manager.addSubTask(subTask3Epic2, testEpic.getId());
-
         Assertions.assertEquals(TaskStatus.IN_PROGRESS, testEpic.getTaskStatus(), "Неверный статус " +
                 "при добавлении DONE если есть IN PROGRESS");
 
         SubTask subTask4 = new SubTask("A", "B", TaskStatus.DONE);
         SubTask subTask5 = new SubTask("C", "D", TaskStatus.DONE);
-
         manager.updateSubTask(subTask4, subTask1Epic1.getId());
         manager.updateSubTask(subTask5, subTask2Epic1.getId());
 
@@ -183,75 +182,69 @@ public class InMemoryTaskManagerTest extends TaskManagerTest<InMemoryTaskManager
     @Test
     public void findTaskById() {
         manager.addTask(task1);
-        final int taskId = task1.getId();
-
-        Task foundTask = manager.getTask(taskId).get();
-
-        Assertions.assertEquals(task1, foundTask, "Задача не найдена");
+        int taskId = task1.getId();
+        Optional<Task> foundTask = manager.getTask(taskId);
+        Assertions.assertTrue(foundTask.isPresent(), "Задача не найдена");
     }
 
     @Test
     public void findEpicById() {
         manager.addEpic(epic1);
         manager.addSubTask(subTask1Epic1, epic1.getId());
-
-        final int epicId = epic1.getId();
-
-        Epic foundEpic = manager.getEpic(epicId).get();
-
-        Assertions.assertEquals(epic1, foundEpic, "Эпик не найден");
+        int epicId = epic1.getId();
+        Optional<Epic> foundEpic = manager.getEpic(epicId);
+        Assertions.assertTrue(foundEpic.isPresent(), "Эпик не найден");
     }
 
     @Test
     public void findSubTaskById() {
         manager.addEpic(epic1);
         manager.addSubTask(subTask1Epic1, epic1.getId());
-
-        final int subTaskId = subTask1Epic1.getId();
-
-        SubTask foundSubTask = manager.getSubTask(subTaskId).get();
-
-        Assertions.assertEquals(subTask1Epic1, foundSubTask, "Подзадача не найдена");
+        int subTaskId = subTask1Epic1.getId();
+        Optional<SubTask> foundSubTask = manager.getSubTask(subTaskId);
+        Assertions.assertTrue(foundSubTask.isPresent(), "Подзадача не найдена");
     }
 
     @Test
     public void removeTaskById() {
         manager.addTask(task1);
         manager.addTask(task2);
-
         int taskId = task1.getId();
-        Task beforeRemoveTask = manager.getTask(taskId)
-                .orElseThrow(() -> new NoSuchElementException("Задача не найдена"));
-
+        Optional<Task> beforeRemoveTask = manager.getTask(taskId);
+        Assertions.assertTrue(beforeRemoveTask.isPresent());
         manager.removeTask(taskId);
-
-        Assertions.assertFalse(manager.getTasksList().contains(beforeRemoveTask), "Задача не удалена");
+        Assertions.assertFalse(manager.getTasksList().contains(beforeRemoveTask.get()), "Задача не удалена");
     }
 
     @Test
     public void removeSubTaskByIdAndRemoveIdFromEpicSubTaskIds() {
         manager.addEpic(epic1);
         manager.addSubTask(subTask1Epic1, epic1.getId());
-
-        final int subTaskId = subTask1Epic1.getId();
+        int subTaskId = subTask1Epic1.getId();
         manager.removeSubTask(subTaskId);
-
-        Epic testEpic = manager.getEpic(epic1.getId()).get();
-
-        Assertions.assertFalse(testEpic.getSubTasksIds().contains(subTaskId), "ID подзадачи не удален из эпика");
+        Optional<Epic> testEpic = manager.getEpic(epic1.getId());
+        Assertions.assertTrue(testEpic.isPresent());
+        Assertions.assertFalse(testEpic.get().getSubTasksIds().contains(subTaskId), "ID подзадачи не удален из эпика");
     }
 
     @Test
     public void removeEpicByIdWithSubTasks() {
         manager.addEpic(epic1);
-        final int epicId = epic1.getId();
-
+        int epicId = epic1.getId();
         manager.addSubTask(subTask1Epic1, epicId);
         manager.addSubTask(subTask2Epic1, epicId);
 
-        Epic testEpic = new Epic(manager.getEpic(epicId).get());
-        SubTask testSubTask1 = new SubTask(manager.getSubTask(subTask1Epic1.getId()).get());
-        SubTask testSubTask2 = new SubTask(manager.getSubTask(subTask2Epic1.getId()).get());
+        Optional<Epic> epic = manager.getEpic(epicId);
+        Optional<SubTask> subTask1 = manager.getSubTask(subTask1Epic1.getId());
+        Optional<SubTask> subTask2 = manager.getSubTask(subTask2Epic1.getId());
+
+        Assertions.assertTrue(epic.isPresent());
+        Assertions.assertTrue(subTask1.isPresent());
+        Assertions.assertTrue(subTask2.isPresent());
+
+        Epic testEpic = new Epic(epic.get());
+        SubTask testSubTask1 = new SubTask(subTask1.get());
+        SubTask testSubTask2 = new SubTask(subTask2.get());
 
         manager.removeEpic(epicId);
 
@@ -262,8 +255,8 @@ public class InMemoryTaskManagerTest extends TaskManagerTest<InMemoryTaskManager
 
     @Test
     public void ifTasksListIsClearedItShouldNotHaveAnyValues() {
-        final Task task = new Task("A", "B", TaskStatus.NEW);
-        final Task task2 = new Task("C", "D", TaskStatus.NEW);
+        Task task = new Task("A", "B", TaskStatus.NEW);
+        Task task2 = new Task("C", "D", TaskStatus.NEW);
 
         manager.addTask(task);
         manager.addTask(task2);
@@ -292,14 +285,15 @@ public class InMemoryTaskManagerTest extends TaskManagerTest<InMemoryTaskManager
         manager.addSubTask(subTask1Epic1, epic1.getId());
         manager.addEpic(epic2);
         manager.addSubTask(subTask3Epic2, epic2.getId());
-
         manager.removeAllSubTasks();
 
-        Epic testEpic1 = manager.getEpic(epic1.getId()).get();
-        Epic testEpic2 = manager.getEpic(epic2.getId()).get();
+        Optional<Epic> testEpic1 = manager.getEpic(epic1.getId());
+        Optional<Epic> testEpic2 = manager.getEpic(epic2.getId());
 
-        Assertions.assertTrue(testEpic1.getSubTasksIds().isEmpty(), "Список подзадач не пуст");
-        Assertions.assertTrue(testEpic2.getSubTasksIds().isEmpty(), "Список подзадач не пуст");
+        Assertions.assertTrue(testEpic1.isPresent());
+        Assertions.assertTrue(testEpic2.isPresent());
+        Assertions.assertTrue(testEpic1.get().getSubTasksIds().isEmpty(), "Список подзадач не пуст");
+        Assertions.assertTrue(testEpic2.get().getSubTasksIds().isEmpty(), "Список подзадач не пуст");
     }
 
     @Test
@@ -344,10 +338,14 @@ public class InMemoryTaskManagerTest extends TaskManagerTest<InMemoryTaskManager
 
         long calculatedDuration = Duration.between(startTime1, startTime2).plus(subTask2Epic1.getTaskDuration())
                 .toMinutes();
-        long epicDurationFromManager = manager.getEpic(epic1.getId()).get().getTaskDuration().toMinutes();
+
+        Optional<Epic> epic = manager.getEpic(epic1.getId());
+        Assertions.assertTrue(epic.isPresent());
+
+        long epicDurationFromManager = epic.get().getTaskDuration().toMinutes();
 
         Assertions.assertEquals(calculatedDuration, epicDurationFromManager);
-        Assertions.assertEquals(startTime1, manager.getEpic(epic1.getId()).get().getTaskStartTime());
+        Assertions.assertEquals(startTime1, epic.get().getTaskStartTime());
     }
 
     @Test
@@ -369,10 +367,21 @@ public class InMemoryTaskManagerTest extends TaskManagerTest<InMemoryTaskManager
 
         // список по дате вручную
         List<Task> tasksInOrder = new LinkedList<>();
-        tasksInOrder.add(manager.getTask(task1.getId()).get());
-        tasksInOrder.add(manager.getTask(task2.getId()).get());
-        tasksInOrder.add(manager.getSubTask(subTask1Epic1.getId()).get());
-        tasksInOrder.add(manager.getSubTask(subTask2Epic1.getId()).get());
+
+        Optional<Task> optionalTask1 = manager.getTask(task1.getId());
+        Optional<Task> optionalTask2 = manager.getTask(task2.getId());
+        Optional<SubTask> optionalSubTask1 = manager.getSubTask(subTask1Epic1.getId());
+        Optional<SubTask> optionalSubTask2 = manager.getSubTask(subTask2Epic1.getId());
+
+        Assertions.assertTrue(optionalTask1.isPresent());
+        Assertions.assertTrue(optionalTask2.isPresent());
+        Assertions.assertTrue(optionalSubTask1.isPresent());
+        Assertions.assertTrue(optionalSubTask2.isPresent());
+
+        tasksInOrder.add(optionalTask1.get());
+        tasksInOrder.add(optionalTask2.get());
+        tasksInOrder.add(optionalSubTask1.get());
+        tasksInOrder.add(optionalSubTask2.get());
 
         // список по порядку методом getPrioritizedTasks()
         List<Task> prioritizedTasks = manager.getPrioritizedTasks();
