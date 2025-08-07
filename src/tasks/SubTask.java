@@ -3,6 +3,8 @@ package tasks;
 import enums.TaskStatus;
 import enums.TaskType;
 
+import java.time.LocalDateTime;
+
 public class SubTask extends Task {
     private int epicId;
 
@@ -11,10 +13,16 @@ public class SubTask extends Task {
         super.taskType = TaskType.SUBTASK;
     }
 
+    public SubTask(String taskName, String taskDescription, TaskStatus taskStatus, LocalDateTime dateTime,
+                   long duration) {
+        super(taskName, taskDescription, taskStatus);
+        super.taskType = TaskType.SUBTASK;
+    }
+
     public SubTask(SubTask subTask) {
         super(subTask);
         this.epicId = subTask.getEpicId();
-        super.taskType = TaskType.SUBTASK;
+        super.taskType = subTask.taskType;
     }
 
     public int getEpicId() {
@@ -32,6 +40,8 @@ public class SubTask extends Task {
                 super.getTaskName() + "," +
                 super.getTaskStatus() + "," +
                 super.getTaskDescription() + "," +
+                super.getTaskStartTime() + "," +
+                super.getTaskDuration() + "," +
                 epicId;
     }
 }

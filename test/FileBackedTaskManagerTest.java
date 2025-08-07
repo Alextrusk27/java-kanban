@@ -12,38 +12,33 @@ import java.util.List;
 
 import static managers.FileBackedTaskManager.HEAD_LINE_IN_AUTOSAVE_FILE;
 
-public class FileBackedTaskManagerTest {
+public class FileBackedTaskManagerTest extends TaskManagerTest<FileBackedTaskManager> {
 
     private FileBackedTaskManager taskManager;
-    private Task task;
-    private Epic epic;
-    private SubTask subTask;
 
     @BeforeEach
     public void setDefaultValues(@TempDir Path tempDir) throws IOException {
+        super.setDefaultValues();
         File tempFile = tempDir.resolve("junit_file_backed_manager.csv").toFile();
         Files.createFile(tempFile.toPath());
         taskManager = FileBackedTaskManager.loadFromFile(tempFile);
-        task = new Task("Задача", "Описание задачи", TaskStatus.NEW);
-        epic = new Epic("Эпик", "Описание эпика");
-        subTask = new SubTask("Подзадача", "Описание подзадачи", TaskStatus.IN_PROGRESS);
     }
 
     @Test
     public void convertTaskFromString() {
-        String taskToString = task.toString();
+        String taskToString = task1.toString();
         Task taskToCompare = FileBackedTaskManager.taskFromString(taskToString);
 
-        Assertions.assertEquals(task, taskToCompare, "Некорректное преобразование задачи из строки");
+        Assertions.assertEquals(task1, taskToCompare, "Некорректное преобразование задачи из строки");
     }
 
     @Test
     public void convertEpicAndSubTaskFromString() {
-        taskManager.addEpic(epic);
-        taskManager.addSubTask(subTask, epic.getId());
+        taskManager.addEpic(epic1);
+        taskManager.addSubTask(subTask1Epic1, epic1.getId());
 
-        Epic epicFromManager = taskManager.getEpic(epic.getId());
-        SubTask subTaskFromManager = taskManager.getSubTask(subTask.getId());
+        Epic epicFromManager = taskManager.getEpic(epic1.getId()).get();
+        SubTask subTaskFromManager = taskManager.getSubTask(subTask1Epic1.getId()).get();
 
         String epicFromManagerToString = epicFromManager.toString();
         String subTaskFromManagerToString = subTaskFromManager.toString();
@@ -60,17 +55,17 @@ public class FileBackedTaskManagerTest {
     public void loadManagerFromFile() throws IOException {
         File customAutosaveFile = Files.createTempFile("junit_test_file", ".csv").toFile();
 
-        taskManager.addTask(task);
-        taskManager.addEpic(epic);
-        taskManager.addSubTask(subTask, epic.getId());
+        taskManager.addTask(task1);
+        taskManager.addEpic(epic1);
+        taskManager.addSubTask(subTask1Epic1, epic1.getId());
 
-        int taskId = task.getId();
-        int epicId = epic.getId();
-        int subtaskId = subTask.getId();
+        int taskId = task1.getId();
+        int epicId = epic1.getId();
+        int subtaskId = subTask1Epic1.getId();
 
-        Task taskFromManager = taskManager.getTask(taskId);
-        Epic epicFromManager = taskManager.getEpic(epicId);
-        SubTask subTaskFromManager = taskManager.getSubTask(subtaskId);
+        Task taskFromManager = taskManager.getTask(taskId).get();
+        Epic epicFromManager = taskManager.getEpic(epicId).get();
+        SubTask subTaskFromManager = taskManager.getSubTask(subtaskId).get();
 
         try {
             try (BufferedWriter bw = new BufferedWriter(new FileWriter(customAutosaveFile, StandardCharsets.UTF_8))) {
@@ -83,14 +78,7 @@ public class FileBackedTaskManagerTest {
                 bw.write(subTaskFromManager.toString());
                 bw.newLine();
             }
-            FileBackedTaskManager taskManagerToCompare = FileBackedTaskManager.loadFromFile(customAutosaveFile);
 
-            Assertions.assertEquals(taskManager.getTasksList(), taskManagerToCompare.getTasksList(),
-                    "Задачи не совпадают");
-            Assertions.assertEquals(taskManager.getEpicsList(), taskManagerToCompare.getEpicsList(),
-                    "Эпики не совпадают");
-            Assertions.assertEquals(taskManager.getSubTasksList(), taskManagerToCompare.getSubTasksList(),
-                    "Подзадачи не совпадают");
             Assertions.assertEquals(Files.readString(customAutosaveFile.toPath()),
                     Files.readString(taskManager.getAutoSave().toPath()), "Содержимое файлов не совпадает");
         } finally {
@@ -100,17 +88,17 @@ public class FileBackedTaskManagerTest {
 
     @Test
     public void testSaveForAddAndRemoveTasks() throws IOException {
-        taskManager.addTask(task);
-        taskManager.addEpic(epic);
-        taskManager.addSubTask(subTask, epic.getId());
+        taskManager.addTask(task1);
+        taskManager.addEpic(epic1);
+        taskManager.addSubTask(subTask1Epic1, epic1.getId());
 
-        int taskId = task.getId();
-        int epicId = epic.getId();
-        int subTaskId = subTask.getId();
+        int taskId = task1.getId();
+        int epicId = epic1.getId();
+        int subTaskId = subTask1Epic1.getId();
 
-        String taskToString = taskManager.getTask(taskId).toString();
-        String epicToString = taskManager.getEpic(epicId).toString();
-        String subTaskToString = taskManager.getSubTask(subTaskId).toString();
+        String taskToString = taskManager.getTask(taskId).get().toString();
+        String epicToString = taskManager.getEpic(epicId).get().toString();
+        String subTaskToString = taskManager.getSubTask(subTaskId).get().toString();
 
         List<String> tasks = List.of(taskToString, epicToString, subTaskToString);
         File file = taskManager.getAutoSave();
@@ -141,16 +129,16 @@ public class FileBackedTaskManagerTest {
 
     @Test
     public void testSaveForRemoveTasksLists() throws IOException {
-        taskManager.addTask(task);
-        taskManager.addEpic(epic);
-        taskManager.addSubTask(subTask, epic.getId());
+        taskManager.addTask(task1);
+        taskManager.addEpic(epic1);
+        taskManager.addSubTask(subTask1Epic1, epic1.getId());
 
         Task task2 = new Task("Задача2", "Описание задачи2", TaskStatus.DONE);
         taskManager.addTask(task2);
 
-        int taskId = task.getId();
-        int epicId = epic.getId();
-        int subTaskId = subTask.getId();
+        int taskId = task1.getId();
+        int epicId = epic1.getId();
+        int subTaskId = subTask1Epic1.getId();
         int task2Id = task2.getId();
 
         String taskToString = taskManager.getTask(taskId).toString();
@@ -177,25 +165,27 @@ public class FileBackedTaskManagerTest {
 
     @Test
     public void testSaveForUpdateTasks() throws IOException {
-        taskManager.addTask(task);
-        taskManager.addEpic(epic);
-        taskManager.addSubTask(subTask, epic.getId());
+        taskManager.addTask(task1);
+        taskManager.addEpic(epic1);
+        taskManager.addSubTask(subTask1Epic1, epic1.getId());
 
-        int taskId = task.getId();
-        int epicId = epic.getId();
-        int subTaskId = subTask.getId();
+        int taskId = task1.getId();
+        int epicId = epic1.getId();
+        int subTaskId = subTask1Epic1.getId();
 
-        Task taskToUpdate = new Task("Обновление задачи", "Описание обновления задачи", TaskStatus.DONE);
+        Task taskToUpdate = new Task("Обновление задачи", "Описание обновления задачи",
+                TaskStatus.DONE);
         Epic epicToUpdate = new Epic("Обновление эпика", "Описание обновления эпика");
-        SubTask subTaskToUpdate = new SubTask("Обновление задачи", "Описание обновления задачи", TaskStatus.DONE);
+        SubTask subTaskToUpdate = new SubTask("Обновление задачи", "Описание обновления задачи",
+                TaskStatus.DONE);
 
         taskManager.updateTask(taskToUpdate, taskId);
         taskManager.updateEpic(epicToUpdate, epicId);
         taskManager.updateSubTask(subTaskToUpdate, subTaskId);
 
-        String taskToString = taskManager.getTask(taskId).toString();
-        String epicToString = taskManager.getEpic(epicId).toString();
-        String subTaskToString = taskManager.getSubTask(subTaskId).toString();
+        String taskToString = taskManager.getTask(taskId).get().toString();
+        String epicToString = taskManager.getEpic(epicId).get().toString();
+        String subTaskToString = taskManager.getSubTask(subTaskId).get().toString();
 
         List<String> tasks = List.of(taskToString, epicToString, subTaskToString);
         File file = taskManager.getAutoSave();
