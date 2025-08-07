@@ -2,10 +2,16 @@ package tasks;
 
 import enums.TaskType;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Optional;
 
 public class Epic extends Task {
-    private ArrayList<Integer> subTasksIds;
+    private final ArrayList<Integer> subTasksIds;
+    private LocalDateTime endTime;
 
     public Epic(String taskName, String taskDescription) {
         super(taskName, taskDescription);
@@ -15,24 +21,21 @@ public class Epic extends Task {
 
     public Epic(Epic epic) {
         super(epic);
-        this.subTasksIds = new ArrayList<>();
         super.taskType = TaskType.EPIC;
+        this.subTasksIds = epic.subTasksIds;
+        this.endTime = epic.endTime;
     }
 
     public ArrayList<Integer> getSubTasksIds() {
         return subTasksIds;
     }
 
-    public void setSubTasksIds(ArrayList<Integer> subTasksIds) {
-        this.subTasksIds = subTasksIds;
+    public void setEndTime(LocalDateTime endTime) {
+        this.endTime = endTime;
     }
 
     @Override
-    public String toString() {
-        return super.getId() + "," +
-                super.getTaskType() + "," +
-                super.getTaskName() + "," +
-                super.getTaskStatus() + "," +
-                super.getTaskDescription() + ",";
+    public LocalDateTime getEndTime() {
+        return endTime;
     }
 }
