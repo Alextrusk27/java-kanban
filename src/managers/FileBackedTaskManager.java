@@ -8,10 +8,12 @@ import tasks.*;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.time.Duration;
+import java.time.LocalDateTime;
 
 public class FileBackedTaskManager extends InMemoryTaskManager {
 
-    public static final String HEAD_LINE_IN_AUTOSAVE_FILE = "id,type,name,status,description,epic";
+    public static final String HEAD_LINE_IN_AUTOSAVE_FILE = "id,type,name,status,description,epic,start,duration";
     private final File autoSave;
 
     public FileBackedTaskManager(String path) {
@@ -181,6 +183,8 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
         int taskId = Integer.parseInt(taskData[0]);
         String taskName = taskData[2];
         String taskDescription = taskData[4];
+        LocalDateTime taskStartTime = LocalDateTime.parse(taskData[5]);
+        long taskDuration = Duration.parse(taskData[6]).toMinutes();
 
         TaskStatus taskStatus;
         switch (taskData[3]) {
@@ -193,18 +197,20 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
 
         switch (taskType) {
             case TaskType.TASK:
-                Task task = new Task(taskName, taskDescription, taskStatus);
+                Task task = new Task(taskName, taskDescription, taskStatus, taskStartTime, taskDuration);
                 task.setId(taskId);
                 return task;
             case TaskType.EPIC:
                 Epic epic = new Epic(taskName, taskDescription);
                 epic.setTaskStatus(taskStatus);
+                epic.setTaskStartTime(taskStartTime);
+                epic.setTaskDuration(taskDuration);
                 epic.setId(taskId);
                 return epic;
             case TaskType.SUBTASK:
-                SubTask subTask = new SubTask(taskName, taskDescription, taskStatus);
+                SubTask subTask = new SubTask(taskName, taskDescription, taskStatus, taskStartTime, taskDuration);
                 subTask.setId(taskId);
-                subTask.setEpicId(Integer.parseInt(taskData[5]));
+                subTask.setEpicId(Integer.parseInt(taskData[7]));
                 return subTask;
             default:
                 throw new IllegalArgumentException("Ошибка преобразования строки в задачу: неизвестный " +
