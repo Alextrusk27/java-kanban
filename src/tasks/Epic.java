@@ -13,13 +13,15 @@ public class Epic extends Task {
         super(taskName, taskDescription);
         subTasksIds = new ArrayList<>();
         super.taskType = TaskType.EPIC;
+        super.taskStartTime = DEFAULT_TIME;
+        this.endTime = DEFAULT_TIME;
     }
 
     public Epic(Epic epic) {
         super(epic);
         super.taskType = TaskType.EPIC;
         this.subTasksIds = epic.subTasksIds;
-        this.endTime = epic.endTime;
+        this.endTime = DEFAULT_TIME;
     }
 
     public ArrayList<Integer> getSubTasksIds() {

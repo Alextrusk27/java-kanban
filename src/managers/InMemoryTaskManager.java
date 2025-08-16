@@ -3,6 +3,7 @@ package managers;
 import enums.TaskStatus;
 import enums.TaskType;
 import exceptions.OverlapException;
+import exceptions.TaskCreateException;
 import tasks.*;
 
 import java.time.Duration;
@@ -55,6 +56,8 @@ public class InMemoryTaskManager implements TaskManager {
                 epic.getSubTasksIds().add(newSubTask.getId()); // добавляем id подзадачи в эпик
                 setEpicParameters(epic.getId());
                 syncTasksPriority();
+            } else {
+                throw new TaskCreateException("Для добавления подзадачи нужно указать существующий EpicID");
             }
         }
     }
@@ -92,7 +95,7 @@ public class InMemoryTaskManager implements TaskManager {
         if (tasksList.containsKey(id)) {
             historyManager.addToHistory(tasksList.get(id));
         }
-        return Optional.of(tasksList.get(id));
+        return Optional.ofNullable(tasksList.get(id));
     }
 
     @Override
@@ -100,7 +103,7 @@ public class InMemoryTaskManager implements TaskManager {
         if (epicsList.containsKey(id)) {
             historyManager.addToHistory(epicsList.get(id));
         }
-        return Optional.of(epicsList.get(id));
+        return Optional.ofNullable(epicsList.get(id));
     }
 
     @Override
@@ -108,7 +111,7 @@ public class InMemoryTaskManager implements TaskManager {
         if (subTasksList.containsKey(id)) {
             historyManager.addToHistory(subTasksList.get(id));
         }
-        return Optional.of(subTasksList.get(id));
+        return Optional.ofNullable(subTasksList.get(id));
     }
 
     @Override
@@ -256,7 +259,7 @@ public class InMemoryTaskManager implements TaskManager {
             currentEpic.setTaskStartTime(startTime);
 
             // установка EndTime
-            currentEpic.setEndTime(endTime);
+                currentEpic.setEndTime(endTime);
 
             // установка Duration
             currentEpic.setTaskDuration(Duration.between(startTime, endTime).toMinutes());
@@ -268,7 +271,7 @@ public class InMemoryTaskManager implements TaskManager {
         prioritizedTasks.addAll(
                 Stream.of(tasksList.values(), subTasksList.values())
                         .flatMap(Collection::stream)
-                        .filter(task -> task.getTaskStartTime() != LocalDateTime.MIN)
+                        .filter(task -> task.getTaskStartTime() != Task.DEFAULT_TIME)
                         .filter(task -> task.getTaskStartTime() != null)
                         .toList()
         );
@@ -277,6 +280,7 @@ public class InMemoryTaskManager implements TaskManager {
     private boolean isOverlap(Task task) {
         if (task.getTaskStartTime() != LocalDateTime.MIN && getPrioritizedTasks().stream()
                     .filter(t -> !t.getTaskType().equals(TaskType.EPIC))
+                    .filter(t -> !t.equals(task))
                     .anyMatch(t -> t.getTaskStartTime().isBefore(task.getTaskStartTime()) &&
                             t.getEndTime().isAfter(task.getTaskStartTime()) ||
                             (task.getTaskStartTime().isBefore(t.getEndTime())) &&

@@ -2,6 +2,7 @@ package tasks;
 
 import enums.TaskStatus;
 import enums.TaskType;
+import exceptions.TaskCreateException;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -9,13 +10,15 @@ import java.util.Objects;
 
 public class Task {
 
+    public static final LocalDateTime DEFAULT_TIME = LocalDateTime.of(2000, 1, 1, 1,1);
+
     private int id = 0; // 0 используется для блокировки многократного добавления одного объекта
     private final String taskName;
     private final String taskDescription;
     protected TaskType taskType;
     private TaskStatus taskStatus;
-    private LocalDateTime taskStartTime = LocalDateTime.MIN;
-    private Duration taskDuration = Duration.ofMinutes(0);
+    protected LocalDateTime taskStartTime = DEFAULT_TIME;
+    protected long taskDuration = 0;
 
     public Task(String taskName, String taskDescription, TaskStatus taskStatus) {
         this.taskName = taskName;
@@ -30,7 +33,7 @@ public class Task {
         this.taskStatus = taskStatus;
         this.taskType = TaskType.TASK;
         this.taskStartTime = dateTime;
-        this.taskDuration = Duration.ofMinutes(duration);
+        this.taskDuration = duration;
     }
 
     // для эпиков
@@ -41,18 +44,22 @@ public class Task {
     }
 
     public Task(Task task) {
-        this.taskName = task.getTaskName();
-        this.taskDescription = task.getTaskDescription();
-        this.taskStatus = task.getTaskStatus();
-        this.id = task.getId();
-        this.taskType = TaskType.TASK;
+        if (task.getTaskName() != null && task.getTaskDescription() != null && task.getTaskStatus() != null) {
 
-        if (task.getTaskStartTime() != null) {
-            this.taskStartTime = task.getTaskStartTime();
-        }
+            this.taskName = task.getTaskName();
+            this.taskDescription = task.getTaskDescription();
+            this.taskStatus = task.getTaskStatus();
+            this.id = task.getId();
+            this.taskType = TaskType.TASK;
 
-        if (task.getTaskDuration() != null) {
-            this.taskDuration = task.getTaskDuration();
+            this.taskStartTime = Objects.requireNonNullElse(task.taskStartTime, DEFAULT_TIME);
+            if (task.getTaskDuration() == null) {
+                this.taskDuration = 0;
+            } else {
+                this.taskDuration = task.taskDuration;
+            }
+        } else {
+            throw new TaskCreateException("Некорректные параметры задачи");
         }
     }
 
@@ -89,7 +96,7 @@ public class Task {
     }
 
     public Duration getTaskDuration() {
-        return taskDuration;
+        return Duration.ofMinutes(taskDuration);
     }
 
     public void setTaskStartTime(LocalDateTime taskStartTime) {
@@ -97,11 +104,11 @@ public class Task {
     }
 
     public void setTaskDuration(long taskDuration) {
-        this.taskDuration = Duration.ofMinutes(taskDuration);
+        this.taskDuration = taskDuration;
     }
 
     public LocalDateTime getEndTime() {
-        return taskStartTime.plus(taskDuration);
+        return taskStartTime.plus(Duration.ofMinutes(taskDuration));
     }
 
     @Override
