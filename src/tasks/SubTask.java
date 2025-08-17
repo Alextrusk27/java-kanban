@@ -15,14 +15,14 @@ public class SubTask extends Task {
 
     public SubTask(String taskName, String taskDescription, TaskStatus taskStatus, LocalDateTime dateTime,
                    long duration) {
-        super(taskName, taskDescription, taskStatus);
+        super(taskName, taskDescription, taskStatus, dateTime, duration);
         super.taskType = TaskType.SUBTASK;
     }
 
     public SubTask(SubTask subTask) {
         super(subTask);
+        super.taskType = TaskType.SUBTASK;
         this.epicId = subTask.getEpicId();
-        super.taskType = subTask.taskType;
     }
 
     public int getEpicId() {

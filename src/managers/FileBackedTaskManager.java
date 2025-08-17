@@ -184,7 +184,12 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
         String taskName = taskData[2];
         String taskDescription = taskData[4];
         LocalDateTime taskStartTime = LocalDateTime.parse(taskData[5]);
-        long taskDuration = Duration.parse(taskData[6]).toMinutes();
+        long taskDuration;
+        if (taskData[6].equals("0")) {
+            taskDuration = 0;
+        } else {
+            taskDuration = Duration.parse(taskData[6]).toMinutes();
+        }
 
         TaskStatus taskStatus;
         switch (taskData[3]) {
